@@ -125,6 +125,23 @@ class AuthRepository {
     }
   }
 
+  Future<Either<AppFailure, bool>> forgotPassword({
+    required String email,
+  }) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      return right(true);
+    } on FirebaseAuthException catch (e) {
+      logInfo("[forgotPassword] exception: ${e.toString()}");
+      return left(AppFailure(e.message ?? 'An unexpected error occurred.'));
+    } catch (e) {
+      logInfo("[forgotPassword] unknown error: $e");
+      return left(
+        AppFailure('Failed to send password reset email: ${e.toString()}'),
+      );
+    }
+  }
+
   ///
   Future<Either<AppFailure, UserModel>> getCurrentUser() async {
     try {

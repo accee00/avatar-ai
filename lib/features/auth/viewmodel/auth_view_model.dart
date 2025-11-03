@@ -10,9 +10,9 @@ class AuthViewModel extends _$AuthViewModel {
   late AuthRepository _authRepository;
 
   @override
-  AsyncValue<UserModel>? build() {
+  AsyncValue<UserModel?> build() {
     _authRepository = ref.watch(authRepositoryProvider);
-    return null;
+    return const AsyncValue.data(null);
   }
 
   Future<void> signUpViaEmailAndPass({
@@ -66,6 +66,19 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
+  Future<void> forgotPassword({required String email}) async {
+    state = const AsyncValue.loading();
+
+    final Either<AppFailure, bool> response = await _authRepository
+        .forgotPassword(email: email);
+
+    response.fold(
+      (AppFailure failure) =>
+          state = AsyncError(failure.message, StackTrace.current),
+      (bool _) => state = AsyncData(null),
+    );
+  }
+
   Future<void> getCurrentUser() async {
     state = const AsyncValue.loading();
 
@@ -76,6 +89,18 @@ class AuthViewModel extends _$AuthViewModel {
       (AppFailure failure) =>
           state = AsyncError(failure.message, StackTrace.current),
       (UserModel user) => state = AsyncData(user),
+    );
+  }
+
+  Future<void> signOut() async {
+    state = const AsyncValue.loading();
+
+    final Either<AppFailure, Unit> response = await _authRepository.signOut();
+
+    response.fold(
+      (AppFailure failure) =>
+          state = AsyncError(failure.message, StackTrace.current),
+      (_) => state = const AsyncData(null),
     );
   }
 }

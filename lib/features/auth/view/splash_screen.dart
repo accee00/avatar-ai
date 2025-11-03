@@ -32,12 +32,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     ref.listen(authViewModelProvider, (previous, next) {
       if (!mounted) return;
 
-      next?.whenOrNull(
+      next.whenOrNull(
         data: (user) {
           context.pushReplacementNamed(AppRoutes.mainScreen);
-          logInfo('Get current user splash screen: ${user.toJson()}');
+          logInfo('Get current user splash screen: ${user!.toJson()}');
         },
-        error: (error, stackTrace) {},
+        error: (error, stackTrace) {
+          logInfo('Error getting current user: $error');
+          context.pushReplacementNamed(AppRoutes.auth);
+        },
       );
     });
 

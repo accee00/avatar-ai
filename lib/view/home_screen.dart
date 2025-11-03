@@ -1,7 +1,9 @@
+import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:avatar_ai/view/create_character_form.dart';
 import 'package:avatar_ai/view/message_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -65,8 +67,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeView extends StatelessWidget {
+class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
+
+  @override
+  ConsumerState<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends ConsumerState<HomeView> {
+  @override
+  void initState() {
+    super.initState();
+    // Example: you can call a provider here
+    // ref.read(authViewModelProvider.notifier).getCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +120,9 @@ class HomeView extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.person_outline),
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(authViewModelProvider.notifier).signOut();
+                },
               ),
             ],
           ),
@@ -287,7 +303,6 @@ class HomeView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar
                 Container(
                   width: 56,
                   height: 56,
@@ -314,8 +329,6 @@ class HomeView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Name
                 Text(
                   character.name,
                   style: const TextStyle(
@@ -327,8 +340,6 @@ class HomeView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-
-                // Tagline
                 Expanded(
                   child: Text(
                     character.tagline,
@@ -342,8 +353,6 @@ class HomeView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Stats
                 Row(
                   children: [
                     Icon(

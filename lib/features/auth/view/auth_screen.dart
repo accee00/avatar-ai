@@ -44,10 +44,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   @override
   Widget build(BuildContext context) {
     ref.listen(authViewModelProvider, (prev, next) {
-      next?.when(
-        data: (UserModel data) {
+      next.when(
+        data: (UserModel? data) {
+          context.pushReplacementNamed(AppRoutes.mainScreen);
           showSnackBar(
-            message: 'Welcome back ${data.email}',
+            message: 'Welcome back ${data?.email}',
             context: context,
             type: SnackBarType.success,
           );
@@ -63,7 +64,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       );
     });
 
-    final bool isLoading = ref.watch(authViewModelProvider)?.isLoading ?? false;
+    final bool isLoading = ref.watch(authViewModelProvider).isLoading;
 
     return Scaffold(
       body: Container(

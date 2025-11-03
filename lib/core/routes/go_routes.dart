@@ -17,7 +17,7 @@ class GoRoutes {
   static GoRouter get router => _router;
 
   static final _router = GoRouter(
-    initialLocation: AppRoutes.auth,
+    initialLocation: AppRoutes.initialRoute,
     routes: <RouteBase>[
       GoRoute(
         name: AppRoutes.initialRoute,
