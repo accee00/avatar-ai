@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:avatar_ai/core/logger/logger.dart';
+import 'package:avatar_ai/core/routes/go_routes.dart';
 import 'package:avatar_ai/firebase_options.dart';
-import 'package:avatar_ai/view/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -23,7 +23,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      key: GoRoutes.navigatorKey,
+      routerConfig: GoRoutes.router,
       title: 'Avatar ai',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -36,7 +38,6 @@ class MyApp extends StatelessWidget {
           surface: const Color(0xFF1A1A1A),
         ),
       ),
-      home: AuthScreen(),
     );
   }
 }

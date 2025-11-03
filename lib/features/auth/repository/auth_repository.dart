@@ -26,6 +26,38 @@ class AuthRepository {
   ///
   AuthRepository(this.firebaseAuth, this.googleSignIn);
 
+  Future<Either<AppFailure, UserModel>> signUpViaEmailAndPassword({
+    required String email,
+    required String password,
+    required String name,
+  }) async {
+    try {
+      final UserCredential response = await firebaseAuth
+          .createUserWithEmailAndPassword(
+            email: email.trim(),
+            password: password.trim(),
+          );
+
+      final User? user = response.user;
+
+      if (user == null) {
+        return left(AppFailure('User is null'));
+      }
+
+      await user.updateDisplayName(name.trim());
+      await user.reload();
+      final updatedUser = firebaseAuth.currentUser;
+
+      return right(UserModel.fromFirebaseUser(updatedUser!));
+    } on FirebaseAuthException catch (e) {
+      logInfo("[signUpViaEmailAndPassword] exception: ${e.toString()}");
+      return left(AppFailure(e.message ?? 'An unexpected error occurred.'));
+    } catch (e) {
+      logInfo("[signUpViaEmailAndPassword] unknown error: $e");
+      return left(AppFailure('Something went wrong.'));
+    }
+  }
+
   ///
   Future<Either<AppFailure, UserModel>> signInViaEmailAndPassword({
     required String email,
@@ -85,7 +117,7 @@ class AuthRepository {
   ///
   Future<Either<AppFailure, Unit>> signOut() async {
     try {
-      await Future.wait([firebaseAuth.signOut(), firebaseAuth.signOut()]);
+      await firebaseAuth.signOut();
       return right(unit);
     } catch (e) {
       logInfo("[signOut] exception: ${e.toString()}");
@@ -93,15 +125,29 @@ class AuthRepository {
     }
   }
 
-  UserModel? getCurrentUser() {
-    final User? user = firebaseAuth.currentUser;
-    if (user == null) return null;
+  ///
+  Future<Either<AppFailure, UserModel>> getCurrentUser() async {
+    try {
+      final User? user = firebaseAuth.currentUser;
 
-    return UserModel(
-      id: user.uid,
-      name: user.displayName ?? '',
-      createdAt: DateTime.now(),
-      email: user.email ?? '',
-    );
+      if (user == null) {
+        return left(AppFailure('No authenticated user found'));
+      }
+
+      await user.reload();
+      final User? reloadedUser = firebaseAuth.currentUser;
+
+      if (reloadedUser == null) {
+        return left(AppFailure('Failed to reload user data'));
+      }
+
+      return right(UserModel.fromFirebaseUser(reloadedUser));
+    } on FirebaseAuthException catch (e) {
+      logInfo("[getCurrentUser] exception: ${e.toString()}");
+      return left(AppFailure(e.message ?? 'An unexpected error occurred.'));
+    } catch (e) {
+      logInfo("[getCurrentUser] unknown error: $e");
+      return left(AppFailure('Failed to get current user: ${e.toString()}'));
+    }
   }
 }
