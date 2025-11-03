@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 enum SnackBarType { success, failure, info }
 
@@ -58,4 +61,25 @@ class _SnackBarConfig {
   final IconData icon;
 
   _SnackBarConfig({required this.backgroundColor, required this.icon});
+}
+
+class AppImagePicker {
+  final ImagePicker _picker = ImagePicker();
+
+  Future<File?> pickImage({required ImageSource source}) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 800,
+      );
+
+      if (pickedFile == null) return null;
+
+      return File(pickedFile.path);
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      return null;
+    }
+  }
 }

@@ -2,7 +2,7 @@ import 'package:avatar_ai/core/routes/app_routes.dart';
 import 'package:avatar_ai/features/auth/view/auth_screen.dart';
 import 'package:avatar_ai/features/auth/view/forgot_password.dart';
 import 'package:avatar_ai/features/auth/view/splash_screen.dart';
-import 'package:avatar_ai/view/home_screen.dart';
+import 'package:avatar_ai/features/home/view/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,7 +37,7 @@ class GoRoutes {
       GoRoute(
         name: AppRoutes.mainScreen,
         path: AppRoutes.mainScreen,
-        builder: (context, state) => HomeScreen(),
+        builder: (context, state) => MainScreen(),
       ),
     ],
   );

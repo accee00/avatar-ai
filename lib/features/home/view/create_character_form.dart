@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:avatar_ai/core/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreateCharacterForm extends StatefulWidget {
   const CreateCharacterForm({super.key});
@@ -12,13 +16,19 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
   final _taglineController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _tagsController = TextEditingController();
-
+  final List<String> _tones = [
+    'Friendly',
+    'Serious',
+    'Funny',
+    'Excited',
+    'Calm',
+  ];
   bool _aiGreeting = false;
   final List<TextEditingController> _greetingControllers = [
     TextEditingController(),
   ];
-  String? _selectedVoice;
-
+  String? _selectedTone;
+  File? _pickedImage;
   @override
   void dispose() {
     _nameController.dispose();
@@ -42,15 +52,6 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
           onPressed: () {},
         ),
         title: const Text('Create Character'),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              'View Character Book',
-              style: TextStyle(color: Colors.grey[400]),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -61,45 +62,62 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Avatar Section
-                Center(
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFD2691E),
-                              const Color(0xFF8B4513),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
+                GestureDetector(
+                  onTap: () async {
+                    File? file = await AppImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (file != null) {
+                      setState(() {
+                        _pickedImage = file;
+                      });
+                    }
+                  },
+                  child: Center(
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 2,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFFD2691E),
+                                const Color(0xFF8B4513),
+                              ],
                             ),
                           ),
-                          child: const Icon(
-                            Icons.edit,
-                            size: 18,
-                            color: Colors.white,
+                          child: ClipOval(
+                            child: _pickedImage != null
+                                ? Image.file(_pickedImage!, fit: BoxFit.cover)
+                                : null, // or placeholder
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -180,7 +198,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                       maxLines: 4,
                     ),
                   );
-                }).toList(),
+                }),
 
                 if (_greetingControllers.length < 5)
                   TextButton.icon(
@@ -228,46 +246,53 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Voice
                 const Text(
-                  'Voice',
+                  'Tone',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
                 ),
+
                 const SizedBox(height: 8),
                 Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A1A1A),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.white.withOpacity(0.1)),
                   ),
-                  child: ListTile(
-                    title: Text(
-                      _selectedVoice ?? 'Add',
-                      style: TextStyle(
-                        color: _selectedVoice == null
-                            ? Colors.grey[600]
-                            : Colors.white,
-                        fontSize: 14,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedTone,
+                      hint: Text(
+                        'Select a tone',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
-                    ),
-                    trailing: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.grey[600],
-                    ),
-                    onTap: () {},
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
+                      dropdownColor: const Color(0xFF1A1A1A),
+                      items: _tones.map((tone) {
+                        return DropdownMenuItem<String>(
+                          value: tone,
+                          child: Text(
+                            tone,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedTone = value;
+                        });
+                      },
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 // Tags
                 const Text(
                   'Tags',

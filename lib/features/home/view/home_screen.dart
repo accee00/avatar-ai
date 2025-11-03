@@ -1,71 +1,7 @@
 import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
-import 'package:avatar_ai/view/create_character_form.dart';
-import 'package:avatar_ai/view/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  List<Widget> view = [HomeView(), ChatScreen(), CreateCharacterForm()];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: view[_selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          backgroundColor: Colors.transparent,
-          selectedItemColor: const Color(0xFF6C63FF),
-          unselectedItemColor: Colors.grey[600],
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.explore_outlined),
-              activeIcon: Icon(Icons.explore),
-              label: 'Discover',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              activeIcon: Icon(Icons.chat_bubble),
-              label: 'Chats',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              activeIcon: Icon(Icons.add_circle),
-              label: 'Create',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              activeIcon: Icon(Icons.search),
-              label: 'Search',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});

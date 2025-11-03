@@ -105,3 +105,92 @@ final class GoogleSignInProvider
 }
 
 String _$googleSignInHash() => r'6b68e7785a816a60cd0c722d8a0ef9c87c7cdc7d';
+
+@ProviderFor(firebaseFireStore)
+const firebaseFireStoreProvider = FirebaseFireStoreProvider._();
+
+final class FirebaseFireStoreProvider
+    extends
+        $FunctionalProvider<
+          FirebaseFirestore,
+          FirebaseFirestore,
+          FirebaseFirestore
+        >
+    with $Provider<FirebaseFirestore> {
+  const FirebaseFireStoreProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'firebaseFireStoreProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$firebaseFireStoreHash();
+
+  @$internal
+  @override
+  $ProviderElement<FirebaseFirestore> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  FirebaseFirestore create(Ref ref) {
+    return firebaseFireStore(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FirebaseFirestore value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FirebaseFirestore>(value),
+    );
+  }
+}
+
+String _$firebaseFireStoreHash() => r'ce7c9988d69067b76afca148c6e26920bd3b99b8';
+
+@ProviderFor(firebaseStorage)
+const firebaseStorageProvider = FirebaseStorageProvider._();
+
+final class FirebaseStorageProvider
+    extends
+        $FunctionalProvider<FirebaseStorage, FirebaseStorage, FirebaseStorage>
+    with $Provider<FirebaseStorage> {
+  const FirebaseStorageProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'firebaseStorageProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$firebaseStorageHash();
+
+  @$internal
+  @override
+  $ProviderElement<FirebaseStorage> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  FirebaseStorage create(Ref ref) {
+    return firebaseStorage(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FirebaseStorage value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FirebaseStorage>(value),
+    );
+  }
+}
+
+String _$firebaseStorageHash() => r'8e9f5814f2e4871c92e546bca90dbeaf2f43edeb';
