@@ -2,6 +2,7 @@ import 'package:avatar_ai/core/failures/failure.dart';
 import 'package:avatar_ai/core/firebase_providers/firebase_providers.dart';
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/features/auth/model/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -13,6 +14,7 @@ AuthRepository authRepository(Ref ref) {
   return AuthRepository(
     ref.watch(firebaseAuthProvider),
     ref.watch(googleSignInProvider),
+    ref.watch(firebaseFireStoreProvider),
   );
 }
 
@@ -24,7 +26,10 @@ class AuthRepository {
   final GoogleSignIn googleSignIn;
 
   ///
-  AuthRepository(this.firebaseAuth, this.googleSignIn);
+  final FirebaseFirestore firebaseFirestore;
+
+  ///
+  AuthRepository(this.firebaseAuth, this.googleSignIn, this.firebaseFirestore);
 
   Future<Either<AppFailure, UserModel>> signUpViaEmailAndPassword({
     required String email,
@@ -39,16 +44,21 @@ class AuthRepository {
           );
 
       final User? user = response.user;
-
-      if (user == null) {
-        return left(AppFailure('User is null'));
-      }
+      if (user == null) return left(AppFailure('User is null'));
 
       await user.updateDisplayName(name.trim());
       await user.reload();
-      final updatedUser = firebaseAuth.currentUser;
+      final User? updatedUser = firebaseAuth.currentUser;
 
-      return right(UserModel.fromFirebaseUser(updatedUser!));
+      final UserModel userModel = UserModel.fromFirebaseUser(updatedUser!);
+
+      final Either<AppFailure, bool> storeResult = await _storeUserInFirestore(
+        userModel,
+      );
+      return storeResult.fold(
+        (AppFailure failure) => left(failure),
+        (_) => right(userModel),
+      );
     } on FirebaseAuthException catch (e) {
       logInfo("[signUpViaEmailAndPassword] exception: ${e.toString()}");
       return left(AppFailure(e.message ?? 'An unexpected error occurred.'));
@@ -165,6 +175,25 @@ class AuthRepository {
     } catch (e) {
       logInfo("[getCurrentUser] unknown error: $e");
       return left(AppFailure('Failed to get current user: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<AppFailure, bool>> _storeUserInFirestore(UserModel user) async {
+    try {
+      final DocumentReference<Map<String, dynamic>> docRef = firebaseFirestore
+          .collection('users')
+          .doc(user.id);
+
+      await docRef.set({
+        'name': user.name,
+        'email': user.email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      return right(true);
+    } catch (e) {
+      logInfo(e);
+      return left(AppFailure('Failed to store user in Firestore: $e'));
     }
   }
 }

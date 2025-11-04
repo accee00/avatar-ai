@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:avatar_ai/core/failures/failure.dart';
 import 'package:avatar_ai/core/firebase_providers/firebase_providers.dart';
+import 'package:avatar_ai/core/logger/logger.dart';
+import 'package:avatar_ai/models/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -36,25 +38,36 @@ class HomeRepository {
   );
 
   Future<Either<AppFailure, bool>> createCharacter({
-    required String characterName,
-    File? avatarUrl,
-    Map<String, dynamic>? extraData,
+    required Character character,
+    required File? avatarFile,
   }) async {
     try {
-      final DocumentReference<Map<String, dynamic>> doc = firebaseFirestore
+      final User? user = firebaseAuth.currentUser;
+      if (user == null) {
+        return left(AppFailure('User not logged in'));
+      }
+
+      final DocumentReference<Map<String, dynamic>> docRef = firebaseFirestore
           .collection('characters')
           .doc();
 
-      final Map<String, dynamic> data = {
-        'id': doc.id,
-        'userId': firebaseAuth.currentUser!.uid,
-        'name': characterName,
-        'avatarUrl': avatarUrl ?? '',
-        'createdAt': FieldValue.serverTimestamp(),
-        if (extraData != null) ...extraData,
-      };
+      String? downloadUrl;
+      if (avatarFile != null) {
+        final Reference storageRef = firebaseStorage.ref().child(
+          'avatars/${user.uid}/${docRef.id}.jpg',
+        );
 
-      await doc.set(data);
+        final TaskSnapshot uploadTask = await storageRef.putFile(avatarFile);
+        downloadUrl = await uploadTask.ref.getDownloadURL();
+
+        logInfo('createCharacter download url $downloadUrl');
+      }
+
+      final data = character
+          .copyWith(avatar: downloadUrl, id: docRef.id)
+          .toJson();
+
+      await docRef.set(data);
 
       return right(true);
     } on FirebaseException catch (e) {
