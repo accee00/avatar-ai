@@ -34,8 +34,8 @@ class AvatarViewmodel extends _$AvatarViewmodel {
     state = AsyncValue.data(
       state.value!.copyWith(
         isLoading: true,
-        errorMessage: null, // Clear error here
-        isCharacterCreated: false, // Also reset other flags
+        errorMessage: null,
+        isCharacterCreated: false,
       ),
     );
 
@@ -72,8 +72,8 @@ class AvatarViewmodel extends _$AvatarViewmodel {
     state = AsyncValue.data(
       state.value!.copyWith(
         isLoading: true,
-        errorMessage: null, // Clear error here
-        isCharacterCreated: false, // Also reset other flags
+        errorMessage: null,
+        isCharacterCreated: false,
       ),
     );
     final Either<AppFailure, bool> response = await _avatarRepository
@@ -107,8 +107,8 @@ class AvatarViewmodel extends _$AvatarViewmodel {
     state = AsyncValue.data(
       state.value!.copyWith(
         isLoading: true,
-        errorMessage: null, // Clear error here
-        isCharacterCreated: false, // Also reset other flags
+        errorMessage: null,
+        isCharacterCreated: false,
       ),
     );
 
@@ -126,7 +126,11 @@ class AvatarViewmodel extends _$AvatarViewmodel {
       },
       (bool success) {
         state = AsyncValue.data(
-          state.value!.copyWith(isLoading: false, errorMessage: null),
+          state.value!.copyWith(
+            isLoading: false,
+            errorMessage: null,
+            isCharacterCreated: true,
+          ),
         );
 
         if (success) {

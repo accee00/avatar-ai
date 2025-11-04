@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:avatar_ai/core/failures/failure.dart';
 import 'package:avatar_ai/core/firebase_providers/firebase_providers.dart';
@@ -53,14 +54,15 @@ class AvatarRepository {
       final DocumentReference<Map<String, dynamic>> docRef = firebaseFirestore
           .collection('characters')
           .doc();
-
       String? downloadUrl;
       if (avatarFile != null) {
         final Reference storageRef = firebaseStorage.ref().child(
           'avatars/${user.uid}/${docRef.id}.jpg',
         );
 
-        final TaskSnapshot uploadTask = await storageRef.putFile(avatarFile);
+        final Uint8List data = await avatarFile.readAsBytes();
+
+        final TaskSnapshot uploadTask = await storageRef.putData(data);
         downloadUrl = await uploadTask.ref.getDownloadURL();
 
         logInfo('createCharacter download url $downloadUrl');
@@ -173,8 +175,9 @@ class AvatarRepository {
             'avatars/${user.uid}/${character.id}.jpg',
           );
 
-          logInfo('Starting avatar upload...');
-          final uploadTask = await storageRef.putFile(avatarFile);
+          final Uint8List data = await avatarFile.readAsBytes();
+
+          final TaskSnapshot uploadTask = await storageRef.putData(data);
           downloadUrl = await uploadTask.ref.getDownloadURL();
           logInfo('Avatar upload successful: $downloadUrl');
         } on FirebaseException catch (e) {

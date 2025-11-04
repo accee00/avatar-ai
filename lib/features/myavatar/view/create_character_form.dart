@@ -142,7 +142,9 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
         if (isCreated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             showSnackBar(
-              message: 'Character created successfully',
+              message: isEdit
+                  ? 'Character updated successfully'
+                  : 'Character created successfully',
               context: context,
               type: SnackBarType.success,
             );
@@ -219,7 +221,43 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
                           child: ClipOval(
                             child: _pickedImage != null
                                 ? Image.file(_pickedImage!, fit: BoxFit.cover)
-                                : null,
+                                : (isEdit &&
+                                      widget.character!.avatar.isNotEmpty)
+                                ? Image.network(
+                                    widget.character!.avatar,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.person,
+                                              size: 60,
+                                              color: Colors.white70,
+                                            ),
+                                  )
+                                : const Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: Colors.white70,
+                                  ),
                           ),
                         ),
                         if (!isCreating)

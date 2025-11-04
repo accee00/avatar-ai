@@ -213,14 +213,29 @@ class _MyAvatarScreenState extends ConsumerState<MyAvatarScreen> {
                     ),
                   ),
                   child: Center(
-                    child: Text(
-                      character.name[0], // Show first character only
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: character.avatar.isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              character.avatar,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    size: 24,
+                                    color: Colors.white,
+                                  ),
+                            ),
+                          )
+                        : Text(
+                            character.name[0],
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
