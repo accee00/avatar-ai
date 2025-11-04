@@ -1,5 +1,5 @@
-import 'package:avatar_ai/features/home/view/create_character_form.dart';
 import 'package:avatar_ai/features/home/view/home_screen.dart';
+import 'package:avatar_ai/features/myavatar/view/my_avatar.dart';
 import 'package:avatar_ai/view/message_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +12,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  List<Widget> view = [HomeView(), ChatScreen(), CreateCharacterForm()];
+  List<Widget> view = [HomeView(), ChatScreen(), MyAvatarScreen()];
 
   @override
   Widget build(BuildContext context) {

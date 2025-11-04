@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:avatar_ai/core/utils/utils.dart';
-import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
+import 'package:avatar_ai/features/myavatar/viewmodel/avatar_viewmodel.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,8 +87,8 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
     // );
 
     ref
-        .read(homeViewModelProvider.notifier)
-        .createCharacter(character: character, avatarFile: _pickedImage);
+        .read(avatarViewmodelProvider.notifier)
+        .createAvatar(character: character, avatarFile: _pickedImage);
   }
 
   void _showErrorSnackbar(String message) {
@@ -99,15 +99,14 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
 
   @override
   Widget build(BuildContext context) {
-    final homeStateAsync = ref.watch(homeViewModelProvider);
+    final avatarStateAsync = ref.watch(avatarViewmodelProvider);
 
-    return homeStateAsync.when(
-      data: (homeState) {
-        final isCreating = homeState.isLoading;
-        final isCreated = homeState.isCharacterCreated;
-        final errorMessage = homeState.errorMessage;
+    return avatarStateAsync.when(
+      data: (avatarState) {
+        final bool isCreating = avatarState.isLoading;
+        final bool isCreated = avatarState.isCharacterCreated;
+        final String? errorMessage = avatarState.errorMessage;
 
-        // Handle success state
         if (isCreated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             showSnackBar(
@@ -122,7 +121,7 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
         if (errorMessage != null && errorMessage.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showErrorSnackbar(errorMessage);
-            ref.read(homeViewModelProvider.notifier);
+            ref.read(avatarViewmodelProvider.notifier);
           });
         }
 
