@@ -42,6 +42,7 @@ class HomeRepository {
     required File? avatarFile,
   }) async {
     try {
+      logInfo('[createCharacter] data: ${character.toString()}');
       final User? user = firebaseAuth.currentUser;
       if (user == null) {
         return left(AppFailure('User not logged in'));
@@ -63,10 +64,10 @@ class HomeRepository {
         logInfo('createCharacter download url $downloadUrl');
       }
 
-      final data = character
-          .copyWith(avatar: downloadUrl, id: docRef.id)
+      final Map<String, dynamic> data = character
+          .copyWith(avatar: downloadUrl, id: docRef.id, createdBy: user.uid)
           .toJson();
-
+      logInfo('[createCharacter] data for db: ${data.toString()}');
       await docRef.set(data);
 
       return right(true);

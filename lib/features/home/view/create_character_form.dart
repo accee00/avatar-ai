@@ -1,17 +1,21 @@
 import 'dart:io';
 
 import 'package:avatar_ai/core/utils/utils.dart';
+import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
+import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateCharacterForm extends StatefulWidget {
+class CreateCharacterForm extends ConsumerStatefulWidget {
   const CreateCharacterForm({super.key});
 
   @override
-  State<CreateCharacterForm> createState() => _CreateCharacterFormState();
+  ConsumerState<CreateCharacterForm> createState() =>
+      _CreateCharacterFormState();
 }
 
-class _CreateCharacterFormState extends State<CreateCharacterForm> {
+class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
   final _nameController = TextEditingController();
   final _taglineController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -29,6 +33,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
   ];
   String? _selectedTone;
   File? _pickedImage;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -41,15 +46,103 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
     super.dispose();
   }
 
+  void _createCharacter() {
+    // if (_nameController.text.trim().isEmpty) {
+    //   _showErrorSnackbar('Please enter a character name');
+    //   return;
+    // }
+    final character = Character(
+      id: '1',
+      createdBy: 'user123',
+      name: 'Albert Einstein',
+      tagline: 'Theoretical Physicist',
+      avatar: 'https://example.com/avatar.jpg',
+      avatarColor: Colors.blue,
+      createdAt: DateTime.now(),
+      description: 'Nobel Prize-winning physicist',
+      tags: ['science', 'physics', 'genius'],
+      greetings: ['Hello there!', 'How can I help you today?'],
+      aiGreetingEnabled: true,
+    );
+
+    // final Character characterData = Character(
+    //   id: '', // handling on repo layer
+    //   createdBy: '', // handling on repo layer
+    //   name: _nameController.text.trim(),
+    //   tagline: _taglineController.text.trim(),
+    //   description: _descriptionController.text.trim(),
+    //   avatar: '',
+    //   avatarColor: Colors.red,
+    //   chats: 0,
+    //   createdAt: DateTime.now(),
+    //   tone: _selectedTone,
+    //   tags: _tagsController.text.trim().isNotEmpty
+    //       ? _tagsController.text.trim().split(',').map((e) => e.trim()).toList()
+    //       : [],
+    //   greetings: _greetingControllers
+    //       .map((controller) => controller.text.trim())
+    //       .where((greeting) => greeting.isNotEmpty)
+    //       .toList(),
+    //   aiGreetingEnabled: _aiGreeting,
+    // );
+
+    ref
+        .read(homeViewModelProvider.notifier)
+        .createCharacter(character: character, avatarFile: _pickedImage);
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final homeStateAsync = ref.watch(homeViewModelProvider);
+
+    return homeStateAsync.when(
+      data: (homeState) {
+        final isCreating = homeState.isLoading;
+        final isCreated = homeState.isCharacterCreated;
+        final errorMessage = homeState.errorMessage;
+
+        // Handle success state
+        if (isCreated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showSnackBar(
+              message: 'Character created successfully',
+              context: context,
+              type: SnackBarType.success,
+            );
+          });
+        }
+
+        // Handle error state
+        if (errorMessage != null && errorMessage.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showErrorSnackbar(errorMessage);
+            ref.read(homeViewModelProvider.notifier);
+          });
+        }
+
+        return _buildForm(isCreating);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+    );
+  }
+
+  Widget _buildForm(bool isCreating) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
         title: const Text('Create Character'),
       ),
@@ -63,16 +156,18 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
               children: [
                 // Avatar Section
                 GestureDetector(
-                  onTap: () async {
-                    File? file = await AppImagePicker().pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (file != null) {
-                      setState(() {
-                        _pickedImage = file;
-                      });
-                    }
-                  },
+                  onTap: isCreating
+                      ? null
+                      : () async {
+                          File? file = await AppImagePicker().pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (file != null) {
+                            setState(() {
+                              _pickedImage = file;
+                            });
+                          }
+                        },
                   child: Center(
                     child: Stack(
                       children: [
@@ -93,29 +188,30 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                           child: ClipOval(
                             child: _pickedImage != null
                                 ? Image.file(_pickedImage!, fit: BoxFit.cover)
-                                : null, // or placeholder
+                                : null,
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1A1A),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 2,
+                        if (!isCreating)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A1A1A),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 18,
+                                color: Colors.white,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.edit,
-                              size: 18,
-                              color: Colors.white,
-                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -136,6 +232,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   controller: _nameController,
                   hint: 'e.g. Albert Einstein',
                   maxLength: 20,
+                  enabled: !isCreating,
                 ),
                 const SizedBox(height: 24),
 
@@ -153,6 +250,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   controller: _taglineController,
                   hint: 'Add a short tagline of your Character',
                   maxLength: 50,
+                  enabled: !isCreating,
                 ),
                 const SizedBox(height: 24),
 
@@ -171,6 +269,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   hint: 'How would your Character describe themselves?',
                   maxLength: 500,
                   maxLines: 5,
+                  enabled: !isCreating,
                 ),
                 const SizedBox(height: 24),
 
@@ -196,11 +295,12 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                           : 'Add another greeting...',
                       maxLength: 4096,
                       maxLines: 4,
+                      enabled: !isCreating,
                     ),
                   );
                 }),
 
-                if (_greetingControllers.length < 5)
+                if (_greetingControllers.length < 5 && !isCreating)
                   TextButton.icon(
                     onPressed: () {
                       setState(() {
@@ -231,11 +331,13 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   ),
                   child: CheckboxListTile(
                     value: _aiGreeting,
-                    onChanged: (value) {
-                      setState(() {
-                        _aiGreeting = value ?? false;
-                      });
-                    },
+                    onChanged: isCreating
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _aiGreeting = value ?? false;
+                            });
+                          },
                     title: const Text(
                       'AI Greeting for New Chats',
                       style: TextStyle(fontSize: 14),
@@ -246,6 +348,8 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Tone
                 const Text(
                   'Tone',
                   style: TextStyle(
@@ -254,7 +358,6 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                     color: Colors.white,
                   ),
                 ),
-
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -284,15 +387,18 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                           ),
                         );
                       }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedTone = value;
-                        });
-                      },
+                      onChanged: isCreating
+                          ? null
+                          : (value) {
+                              setState(() {
+                                _selectedTone = value;
+                              });
+                            },
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
+
                 // Tags
                 const Text(
                   'Tags',
@@ -306,6 +412,7 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                 _buildInputField(
                   controller: _tagsController,
                   hint: 'Add tags to help people discover your Character',
+                  enabled: !isCreating,
                 ),
                 const SizedBox(height: 40),
 
@@ -314,21 +421,32 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: isCreating ? null : _createCharacter,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
+                      backgroundColor: isCreating
+                          ? Colors.grey
+                          : const Color(0xFF6C63FF),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
-                      'Create Character',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: isCreating
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Create Character',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -339,32 +457,37 @@ class _CreateCharacterFormState extends State<CreateCharacterForm> {
       ),
     );
   }
+}
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String hint,
-    int? maxLength,
-    int maxLines = 1,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+Widget _buildInputField({
+  required TextEditingController controller,
+  required String hint,
+  int? maxLength,
+  int maxLines = 1,
+  bool enabled = true,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: const Color(0xFF1A1A1A),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.white.withOpacity(0.1)),
+    ),
+    child: TextField(
+      controller: controller,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      enabled: enabled,
+      style: TextStyle(
+        color: enabled ? Colors.white : Colors.grey,
+        fontSize: 14,
       ),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        maxLength: maxLength,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-          counterStyle: TextStyle(color: Colors.grey[600], fontSize: 12),
-        ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.all(16),
+        counterStyle: TextStyle(color: Colors.grey[600], fontSize: 12),
       ),
-    );
-  }
+    ),
+  );
 }

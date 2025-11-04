@@ -114,7 +114,15 @@ class AuthRepository {
       if (user == null) {
         return left(AppFailure('User is null'));
       }
-      return right(UserModel.fromFirebaseUser(user));
+      final UserModel userModel = UserModel.fromFirebaseUser(user);
+
+      final Either<AppFailure, bool> storeResult = await _storeUserInFirestore(
+        userModel,
+      );
+      return storeResult.fold(
+        (AppFailure failure) => left(failure),
+        (_) => right(userModel),
+      );
     } on FirebaseAuthException catch (e) {
       logInfo("[signInWithGoogle] exception: ${e.toString()}");
       return left(AppFailure(e.message ?? 'An unexpected error occur.'));
@@ -192,7 +200,7 @@ class AuthRepository {
 
       return right(true);
     } catch (e) {
-      logInfo(e);
+      logInfo('[_storeUserInFirestore] exceptions: $e');
       return left(AppFailure('Failed to store user in Firestore: $e'));
     }
   }

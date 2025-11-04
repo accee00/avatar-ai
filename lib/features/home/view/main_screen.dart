@@ -49,9 +49,9 @@ class _MainScreenState extends State<MainScreen> {
               label: 'Chats',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              activeIcon: Icon(Icons.add_circle),
-              label: 'Create',
+              icon: Icon(Icons.av_timer_sharp),
+              activeIcon: Icon(Icons.av_timer_sharp),
+              label: 'My Avatars',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.search),

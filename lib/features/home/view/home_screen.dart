@@ -323,6 +323,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
 final List<Character> _forYou = [
   Character(
+    createdBy: '',
     name: 'Elon Musk',
     tagline: 'Entrepreneur & innovator behind Tesla, SpaceX',
     avatar: 'EM',
@@ -332,6 +333,7 @@ final List<Character> _forYou = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Raiden Shogun',
     tagline: 'Eternity is the only truth I know',
     avatar: 'RS',
@@ -341,6 +343,7 @@ final List<Character> _forYou = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Albert Einstein',
     tagline: 'Theoretical physicist, developer of relativity',
     avatar: 'AE',
@@ -350,6 +353,7 @@ final List<Character> _forYou = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Socrates',
     tagline: 'Greek philosopher from Athens',
     avatar: 'SO',
@@ -362,6 +366,7 @@ final List<Character> _forYou = [
 
 final List<Character> _tryThese = [
   Character(
+    createdBy: '',
     name: 'Anime Girl',
     tagline: 'Cute anime companion for fun conversations',
     avatar: 'AG',
@@ -371,6 +376,7 @@ final List<Character> _tryThese = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Creative Helper',
     tagline: 'I help you write stories, poems, and more!',
     avatar: 'CH',
@@ -380,6 +386,7 @@ final List<Character> _tryThese = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Psychologist',
     tagline: 'Professional counselor here to listen',
     avatar: 'PS',
@@ -389,6 +396,7 @@ final List<Character> _tryThese = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Game Master',
     tagline: 'Your guide through epic adventures',
     avatar: 'GM',
@@ -401,6 +409,7 @@ final List<Character> _tryThese = [
 
 final List<Character> _featured = [
   Character(
+    createdBy: '',
     name: 'Shakespeare',
     tagline: 'The Bard of Avon, master of words',
     avatar: 'WS',
@@ -410,6 +419,7 @@ final List<Character> _featured = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Mario',
     tagline: 'It\'s-a me! Let\'s-a go!',
     avatar: 'MA',
@@ -419,6 +429,7 @@ final List<Character> _featured = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Tech Support',
     tagline: 'Have you tried turning it off and on?',
     avatar: 'TS',
@@ -428,6 +439,7 @@ final List<Character> _featured = [
     createdAt: DateTime.now(),
   ),
   Character(
+    createdBy: '',
     name: 'Fitness Coach',
     tagline: 'Push yourself to the limit!',
     avatar: 'FC',
