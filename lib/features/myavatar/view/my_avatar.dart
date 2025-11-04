@@ -1,63 +1,75 @@
+import 'package:avatar_ai/core/logger/logger.dart';
+import 'package:avatar_ai/core/routes/app_routes.dart';
+import 'package:avatar_ai/features/myavatar/viewmodel/avatar_state.dart';
+import 'package:avatar_ai/features/myavatar/viewmodel/avatar_viewmodel.dart';
+import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class MyAvatarScreen extends StatelessWidget {
+class MyAvatarScreen extends ConsumerStatefulWidget {
   const MyAvatarScreen({super.key});
 
   @override
+  ConsumerState<MyAvatarScreen> createState() => _MyAvatarScreenState();
+}
+
+class _MyAvatarScreenState extends ConsumerState<MyAvatarScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Optional: Trigger data loading on init
+    _loadData();
+  }
+
+  Future<void> _loadData() async {}
+
+  void _navigateToCreateAvatar() {
+    context.pushNamed(AppRoutes.createAvatar);
+  }
+
+  void _navigateToAvatarDetails(Character character) {
+    // Implement navigation to avatar details
+    // context.pushNamed(AppRoutes.avatarDetails, extra: character);
+  }
+
+  void _editAvatar(Character character) {
+    context.pushNamed(AppRoutes.editAvatar, extra: character);
+  }
+
+  void _shareAvatar(Character character) {
+    // Implement share functionality
+  }
+
+  Future<void> _deleteAvatar(Character character) async {
+    try {
+      await ref
+          .read(avatarViewmodelProvider.notifier)
+          .deleteCharacter(characterId: character.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${character.name} deleted'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Dummy data for avatars
-    final List<Map<String, dynamic>> myAvatars = [
-      {
-        'id': '1',
-        'name': 'Albert Einstein',
-        'tagline': 'Theoretical Physicist',
-        'avatar': 'https://example.com/einstein.jpg',
-        'avatarColor': const Color(0xFF6C63FF),
-        'chats': 1234,
-        'createdAt': DateTime.now().subtract(const Duration(days: 30)),
-        'tags': ['science', 'physics', 'genius'],
-      },
-      {
-        'id': '2',
-        'name': 'Marie Curie',
-        'tagline': 'Pioneer in Radioactivity',
-        'avatar': 'https://example.com/curie.jpg',
-        'avatarColor': const Color(0xFFFF6B9D),
-        'chats': 856,
-        'createdAt': DateTime.now().subtract(const Duration(days: 15)),
-        'tags': ['chemistry', 'science', 'nobel'],
-      },
-      {
-        'id': '3',
-        'name': 'Leonardo da Vinci',
-        'tagline': 'Renaissance Polymath',
-        'avatar': 'https://example.com/davinci.jpg',
-        'avatarColor': const Color(0xFFD2691E),
-        'chats': 2103,
-        'createdAt': DateTime.now().subtract(const Duration(days: 45)),
-        'tags': ['art', 'inventor', 'renaissance'],
-      },
-      {
-        'id': '4',
-        'name': 'Ada Lovelace',
-        'tagline': 'First Computer Programmer',
-        'avatar': 'https://example.com/lovelace.jpg',
-        'avatarColor': const Color(0xFF4ECDC4),
-        'chats': 567,
-        'createdAt': DateTime.now().subtract(const Duration(days: 7)),
-        'tags': ['programming', 'mathematics', 'pioneer'],
-      },
-      {
-        'id': '5',
-        'name': 'Shakespeare',
-        'tagline': 'Master of Words',
-        'avatar': 'https://example.com/shakespeare.jpg',
-        'avatarColor': const Color(0xFFF4A261),
-        'chats': 1890,
-        'createdAt': DateTime.now().subtract(const Duration(days: 60)),
-        'tags': ['literature', 'drama', 'poetry'],
-      },
-    ];
+    final avatarState = ref.watch(avatarViewmodelProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -75,16 +87,24 @@ class MyAvatarScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-              // Navigate to create character screen
-            },
+            onPressed: _navigateToCreateAvatar,
             tooltip: 'Create New Avatar',
           ),
         ],
       ),
-      body: myAvatars.isEmpty
-          ? _buildEmptyState(context)
-          : ListView.builder(
+      body: avatarState.when(
+        data: (AvatarState data) {
+          final List<Character> myAvatars = data.myCharacters;
+          logInfo('[MyAvatarScreen] myAvatars count: ${myAvatars.toString()}');
+          if (myAvatars.isEmpty) {
+            return _buildEmptyState(context);
+          }
+
+          return RefreshIndicator(
+            onRefresh: _loadData,
+            backgroundColor: const Color(0xFF1A1A1A),
+            color: Colors.white,
+            child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: myAvatars.length,
               itemBuilder: (context, index) {
@@ -92,6 +112,32 @@ class MyAvatarScreen extends StatelessWidget {
                 return _buildAvatarCard(context, avatar);
               },
             ),
+          );
+        },
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load avatars',
+                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -117,9 +163,7 @@ class MyAvatarScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {
-              // Navigate to create character screen
-            },
+            onPressed: _navigateToCreateAvatar,
             icon: const Icon(Icons.add),
             label: const Text('Create Avatar'),
             style: ElevatedButton.styleFrom(
@@ -136,7 +180,7 @@ class MyAvatarScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarCard(BuildContext context, Map<String, dynamic> avatar) {
+  Widget _buildAvatarCard(BuildContext context, Character character) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -148,9 +192,7 @@ class MyAvatarScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // Navigate to avatar details or edit screen
-          },
+          onTap: () => _navigateToAvatarDetails(character),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -165,14 +207,14 @@ class MyAvatarScreen extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        avatar['avatarColor'],
-                        avatar['avatarColor'].withOpacity(0.7),
+                        character.avatarColor,
+                        character.avatarColor.withOpacity(0.7),
                       ],
                     ),
                   ),
                   child: Center(
                     child: Text(
-                      avatar['name'][0],
+                      character.name[0], // Show first character only
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -189,7 +231,7 @@ class MyAvatarScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        avatar['name'],
+                        character.name,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -198,7 +240,7 @@ class MyAvatarScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        avatar['tagline'],
+                        character.tagline,
                         style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -213,7 +255,7 @@ class MyAvatarScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${_formatNumber(avatar['chats'])} chats',
+                            '${_formatNumber(character.chats)} chats',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -227,7 +269,7 @@ class MyAvatarScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _formatDate(avatar['createdAt']),
+                            _formatDate(character.createdAt),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -236,35 +278,36 @@ class MyAvatarScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: (avatar['tags'] as List<String>)
-                            .take(3)
-                            .map(
-                              (tag) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
+                      if (character.tags.isNotEmpty)
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: character.tags
+                              .take(3)
+                              .map(
+                                (tag) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[500],
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  tag,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[500],
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                              )
+                              .toList(),
+                        ),
                     ],
                   ),
                 ),
@@ -279,13 +322,13 @@ class MyAvatarScreen extends StatelessWidget {
                   onSelected: (value) {
                     switch (value) {
                       case 'edit':
-                        // Navigate to edit screen
+                        _editAvatar(character);
                         break;
                       case 'share':
-                        // Share avatar
+                        _shareAvatar(character);
                         break;
                       case 'delete':
-                        _showDeleteDialog(context, avatar['name']);
+                        _showDeleteDialog(context, character);
                         break;
                     }
                   },
@@ -356,7 +399,7 @@ class MyAvatarScreen extends StatelessWidget {
     }
   }
 
-  void _showDeleteDialog(BuildContext context, String avatarName) {
+  void _showDeleteDialog(BuildContext context, Character character) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -367,7 +410,7 @@ class MyAvatarScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Are you sure you want to delete "$avatarName"? This action cannot be undone.',
+          'Are you sure you want to delete "${character.name}"? This action cannot be undone.',
           style: TextStyle(color: Colors.grey[400]),
         ),
         actions: [
@@ -377,14 +420,8 @@ class MyAvatarScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              // Delete avatar logic here
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('$avatarName deleted'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              _deleteAvatar(character);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),

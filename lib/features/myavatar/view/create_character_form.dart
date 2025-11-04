@@ -5,21 +5,22 @@ import 'package:avatar_ai/features/myavatar/viewmodel/avatar_viewmodel.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateCharacterForm extends ConsumerStatefulWidget {
-  const CreateCharacterForm({super.key});
-
+  const CreateCharacterForm({super.key, this.character});
+  final Character? character;
   @override
   ConsumerState<CreateCharacterForm> createState() =>
       _CreateCharacterFormState();
 }
 
 class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
-  final _nameController = TextEditingController();
-  final _taglineController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _tagsController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _taglineController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
   final List<String> _tones = [
     'Friendly',
     'Serious',
@@ -33,6 +34,24 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
   ];
   String? _selectedTone;
   File? _pickedImage;
+  bool get isEdit => widget.character != null;
+
+  @override
+  void initState() {
+    if (isEdit) {
+      _nameController.text = widget.character!.name;
+      _taglineController.text = widget.character!.tagline;
+      _descriptionController.text = widget.character!.description ?? '';
+      _tagsController.text = widget.character!.tags.join(', ');
+      _selectedTone = widget.character!.tone;
+      _aiGreeting = widget.character!.aiGreetingEnabled;
+      _greetingControllers.clear();
+      for (var greeting in widget.character!.greetings) {
+        _greetingControllers.add(TextEditingController(text: greeting));
+      }
+    }
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -46,54 +65,67 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
     super.dispose();
   }
 
-  void _createCharacter() {
-    // if (_nameController.text.trim().isEmpty) {
-    //   _showErrorSnackbar('Please enter a character name');
-    //   return;
-    // }
-    final character = Character(
-      id: '1',
-      createdBy: 'user123',
-      name: 'Albert Einstein',
-      tagline: 'Theoretical Physicist',
-      avatar: 'https://example.com/avatar.jpg',
-      avatarColor: Colors.blue,
-      createdAt: DateTime.now(),
-      description: 'Nobel Prize-winning physicist',
-      tags: ['science', 'physics', 'genius'],
-      greetings: ['Hello there!', 'How can I help you today?'],
-      aiGreetingEnabled: true,
+  void _updateCharacter() {
+    if (_nameController.text.trim().isEmpty) {
+      _showErrorSnackbar('Please enter a character name');
+      return;
+    }
+    final Character updatedCharacter = widget.character!.copyWith(
+      name: _nameController.text.trim(),
+      tagline: _taglineController.text.trim(),
+      description: _descriptionController.text.trim(),
+      tone: _selectedTone,
+      tags: _tagsController.text.trim().isNotEmpty
+          ? _tagsController.text.trim().split(',').map((e) => e.trim()).toList()
+          : [],
+      greetings: _greetingControllers
+          .map((controller) => controller.text.trim())
+          .where((greeting) => greeting.isNotEmpty)
+          .toList(),
+      aiGreetingEnabled: _aiGreeting,
     );
+    ref
+        .read(avatarViewmodelProvider.notifier)
+        .updateCharacter(character: updatedCharacter, avatarFile: _pickedImage);
+  }
 
-    // final Character characterData = Character(
-    //   id: '', // handling on repo layer
-    //   createdBy: '', // handling on repo layer
-    //   name: _nameController.text.trim(),
-    //   tagline: _taglineController.text.trim(),
-    //   description: _descriptionController.text.trim(),
-    //   avatar: '',
-    //   avatarColor: Colors.red,
-    //   chats: 0,
-    //   createdAt: DateTime.now(),
-    //   tone: _selectedTone,
-    //   tags: _tagsController.text.trim().isNotEmpty
-    //       ? _tagsController.text.trim().split(',').map((e) => e.trim()).toList()
-    //       : [],
-    //   greetings: _greetingControllers
-    //       .map((controller) => controller.text.trim())
-    //       .where((greeting) => greeting.isNotEmpty)
-    //       .toList(),
-    //   aiGreetingEnabled: _aiGreeting,
-    // );
+  void _createCharacter() {
+    if (_nameController.text.trim().isEmpty) {
+      _showErrorSnackbar('Please enter a character name');
+      return;
+    }
+
+    final Character characterData = Character(
+      id: '', // handling on repo layer
+      createdBy: '', // handling on repo layer
+      name: _nameController.text.trim(),
+      tagline: _taglineController.text.trim(),
+      description: _descriptionController.text.trim(),
+      avatar: '', // handling on repo layer
+      avatarColor: ColorGenerator.generateRandomColor(),
+      chats: 0,
+      createdAt: DateTime.now(),
+      tone: _selectedTone,
+      tags: _tagsController.text.trim().isNotEmpty
+          ? _tagsController.text.trim().split(',').map((e) => e.trim()).toList()
+          : [],
+      greetings: _greetingControllers
+          .map((controller) => controller.text.trim())
+          .where((greeting) => greeting.isNotEmpty)
+          .toList(),
+      aiGreetingEnabled: _aiGreeting,
+    );
 
     ref
         .read(avatarViewmodelProvider.notifier)
-        .createAvatar(character: character, avatarFile: _pickedImage);
+        .createAvatar(character: characterData, avatarFile: _pickedImage);
   }
 
   void _showErrorSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    showSnackBar(
+      message: message,
+      context: context,
+      type: SnackBarType.failure,
     );
   }
 
@@ -114,6 +146,7 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
               context: context,
               type: SnackBarType.success,
             );
+            context.pop();
           });
         }
 
@@ -121,7 +154,6 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
         if (errorMessage != null && errorMessage.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showErrorSnackbar(errorMessage);
-            ref.read(avatarViewmodelProvider.notifier);
           });
         }
 
@@ -140,7 +172,7 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            isCreating ? null : Navigator.of(context).pop();
           },
         ),
         title: const Text('Create Character'),
@@ -420,7 +452,11 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: isCreating ? null : _createCharacter,
+                    onPressed: isCreating
+                        ? null
+                        : isEdit
+                        ? _updateCharacter
+                        : _createCharacter,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isCreating
                           ? Colors.grey
@@ -438,8 +474,8 @@ class _CreateCharacterFormState extends ConsumerState<CreateCharacterForm> {
                               valueColor: AlwaysStoppedAnimation(Colors.white),
                             ),
                           )
-                        : const Text(
-                            'Create Character',
+                        : Text(
+                            isEdit ? 'Update Character' : 'Create Character',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

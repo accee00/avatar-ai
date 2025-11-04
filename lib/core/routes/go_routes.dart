@@ -3,6 +3,8 @@ import 'package:avatar_ai/features/auth/view/auth_screen.dart';
 import 'package:avatar_ai/features/auth/view/forgot_password.dart';
 import 'package:avatar_ai/features/auth/view/splash_screen.dart';
 import 'package:avatar_ai/features/home/view/main_screen.dart';
+import 'package:avatar_ai/features/myavatar/view/create_character_form.dart';
+import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,6 +26,7 @@ class GoRoutes {
         path: AppRoutes.initialRoute,
         builder: (BuildContext context, GoRouterState state) => SplashScreen(),
       ),
+
       GoRoute(
         name: AppRoutes.auth,
         path: AppRoutes.auth,
@@ -38,6 +41,20 @@ class GoRoutes {
         name: AppRoutes.mainScreen,
         path: AppRoutes.mainScreen,
         builder: (context, state) => MainScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.createAvatar,
+        path: AppRoutes.createAvatar,
+        builder: (BuildContext context, GoRouterState state) =>
+            CreateCharacterForm(),
+      ),
+      GoRoute(
+        name: AppRoutes.editAvatar,
+        path: AppRoutes.editAvatar,
+        builder: (BuildContext context, GoRouterState state) {
+          final character = state.extra as Character;
+          return CreateCharacterForm(character: character);
+        },
       ),
     ],
   );

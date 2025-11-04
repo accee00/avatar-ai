@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,5 +82,36 @@ class AppImagePicker {
       debugPrint('Error picking image: $e');
       return null;
     }
+  }
+}
+
+class ColorGenerator {
+  static final Random _random = Random();
+
+  static Color generateRandomColor() {
+    final colorOptions = [
+      const Color(0xFF6C63FF), // Purple
+      const Color(0xFFFF6B9D), // Pink
+      const Color(0xFF4ECDC4), // Teal
+      const Color(0xFFF4A261), // Orange
+      const Color(0xFFE76F51), // Red-Orange
+      const Color(0xFF2A9D8F), // Sea Green
+      const Color(0xFFE63946), // Red
+      const Color(0xFF06FFA5), // Mint
+      const Color(0xFFFFBE0B), // Yellow
+      const Color(0xFFFB5607), // Bright Orange
+      const Color(0xFF8338EC), // Violet
+      const Color(0xFF3A86FF), // Blue
+      const Color(0xFFFF006E), // Hot Pink
+      const Color(0xFF00F5FF), // Cyan
+      const Color(0xFFD62828), // Dark Red
+      const Color(0xFFF77F00), // Dark Orange
+      const Color(0xFFD2691E), // Chocolate
+      const Color(0xFF8B4513), // Saddle Brown
+      const Color(0xFF20B2AA), // Light Sea Green
+      const Color(0xFF9B59B6), // Amethyst
+    ];
+
+    return colorOptions[_random.nextInt(colorOptions.length)];
   }
 }

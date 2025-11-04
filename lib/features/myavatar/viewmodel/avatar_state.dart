@@ -1,4 +1,5 @@
 import 'package:avatar_ai/models/character_model.dart';
+import 'package:flutter/foundation.dart';
 
 class AvatarState {
   final List<Character> myCharacters;
@@ -24,6 +25,26 @@ class AvatarState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       isCharacterCreated: isCharacterCreated ?? this.isCharacterCreated,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AvatarState &&
+        listEquals(other.myCharacters, myCharacters) &&
+        other.isLoading == isLoading &&
+        other.errorMessage == errorMessage &&
+        other.isCharacterCreated == isCharacterCreated;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      myCharacters,
+      isLoading,
+      errorMessage,
+      isCharacterCreated,
     );
   }
 }
