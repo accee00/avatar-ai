@@ -96,7 +96,7 @@ class AuthViewModel extends _$AuthViewModel {
     state = const AsyncValue.loading();
 
     final Either<AppFailure, Unit> response = await _authRepository.signOut();
-
+    if (!ref.mounted) return;
     response.fold(
       (AppFailure failure) =>
           state = AsyncError(failure.message, StackTrace.current),
