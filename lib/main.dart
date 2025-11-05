@@ -3,6 +3,7 @@
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/core/routes/go_routes.dart';
 import 'package:avatar_ai/firebase_options.dart';
+import 'package:avatar_ai/seed_characters.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -14,7 +15,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initLogger(level: kDebugMode ? Level.ALL : Level.SEVERE);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   runApp(ProviderScope(child: MyApp()));
 }
 

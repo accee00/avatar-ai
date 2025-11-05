@@ -33,7 +33,7 @@ final class AvatarViewmodelProvider
   AvatarViewmodel create() => AvatarViewmodel();
 }
 
-String _$avatarViewmodelHash() => r'b80535ba8024d39e83b95acd83cc24c257b5e76d';
+String _$avatarViewmodelHash() => r'03a24e81e3cce713a477675010466d5ae2d949c3';
 
 abstract class _$AvatarViewmodel extends $AsyncNotifier<AvatarState> {
   FutureOr<AvatarState> build();

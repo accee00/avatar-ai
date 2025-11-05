@@ -1,4 +1,6 @@
 import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
+
+import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,8 +16,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   void initState() {
     super.initState();
-    // Example: you can call a provider here
-    // ref.read(authViewModelProvider.notifier).getCurrentUser();
+  }
+
+  List<Character> get _forYou {
+    final homeState = ref.watch(homeViewModelProvider).value;
+    return homeState?.forYou ?? [];
+  }
+
+  List<Character> get _tryThese {
+    final homeState = ref.watch(homeViewModelProvider).value;
+    return homeState?.newToYou ?? [];
+  }
+
+  List<Character> get _featured {
+    final homeState = ref.watch(homeViewModelProvider).value;
+    return homeState?.frequentlyUsed ?? [];
   }
 
   @override
@@ -128,96 +143,126 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
           // For You Section
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'For you',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'For you',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.8,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildCharacterCard(_forYou[index]),
-                childCount: _forYou.length,
-              ),
+                const SizedBox(height: 16),
+                _buildHorizontalGrid(_forYou),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
 
           // Try these Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Try these',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.8,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildCharacterCard(_tryThese[index]),
-                childCount: _tryThese.length,
-              ),
-            ),
-          ),
+          _tryThese.isNotEmpty
+              ? SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          'Try these',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildHorizontalGrid(_tryThese),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                )
+              : SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Featured Section
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Featured',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Featured',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.8,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildCharacterCard(_featured[index]),
-                childCount: _featured.length,
-              ),
+                const SizedBox(height: 16),
+                _buildHorizontalGrid(_featured),
+              ],
             ),
           ),
 
           SliverPadding(padding: const EdgeInsets.only(bottom: 80)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalGrid(List<Character> characters) {
+    if (characters.isEmpty) return const SizedBox.shrink();
+
+    final int pageCount = (characters.length / 4).ceil();
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.5,
+      child: PageView.builder(
+        padEnds: false,
+        controller: PageController(viewportFraction: 0.9),
+        itemCount: pageCount,
+
+        itemBuilder: (context, pageIndex) {
+          final int startIndex = pageIndex * 4;
+          final int endIndex = (startIndex + 4).clamp(0, characters.length);
+          final List<Character> pageCharacters = characters.sublist(
+            startIndex,
+            endIndex,
+          );
+          if (pageIndex >= pageCount) {
+            final homeState = ref.watch(homeViewModelProvider).value;
+            if (homeState?.isLoadingMore ?? false) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
+              );
+            }
+            return const SizedBox.shrink();
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 8.0),
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: pageCharacters.length,
+              itemBuilder: (context, index) {
+                return _buildCharacterCard(pageCharacters[index]);
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -255,7 +300,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                   child: Center(
                     child: Text(
-                      character.avatar,
+                      character.name[0],
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -320,132 +365,3 @@ class _HomeViewState extends ConsumerState<HomeView> {
     return chats.toString();
   }
 }
-
-final List<Character> _forYou = [
-  Character(
-    createdBy: '',
-    name: 'Elon Musk',
-    tagline: 'Entrepreneur & innovator behind Tesla, SpaceX',
-    avatar: 'EM',
-    avatarColor: const Color(0xFF6C63FF),
-    chats: 125000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Raiden Shogun',
-    tagline: 'Eternity is the only truth I know',
-    avatar: 'RS',
-    avatarColor: const Color(0xFF9333EA),
-    chats: 98000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Albert Einstein',
-    tagline: 'Theoretical physicist, developer of relativity',
-    avatar: 'AE',
-    avatarColor: const Color(0xFFEF4444),
-    chats: 87000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Socrates',
-    tagline: 'Greek philosopher from Athens',
-    avatar: 'SO',
-    avatarColor: const Color(0xFF10B981),
-    chats: 76000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-];
-
-final List<Character> _tryThese = [
-  Character(
-    createdBy: '',
-    name: 'Anime Girl',
-    tagline: 'Cute anime companion for fun conversations',
-    avatar: 'AG',
-    avatarColor: const Color(0xFFEC4899),
-    chats: 145000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Creative Helper',
-    tagline: 'I help you write stories, poems, and more!',
-    avatar: 'CH',
-    avatarColor: const Color(0xFF8B5CF6),
-    chats: 54000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Psychologist',
-    tagline: 'Professional counselor here to listen',
-    avatar: 'PS',
-    avatarColor: const Color(0xFF06B6D4),
-    chats: 67000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Game Master',
-    tagline: 'Your guide through epic adventures',
-    avatar: 'GM',
-    avatarColor: const Color(0xFFF59E0B),
-    chats: 43000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-];
-
-final List<Character> _featured = [
-  Character(
-    createdBy: '',
-    name: 'Shakespeare',
-    tagline: 'The Bard of Avon, master of words',
-    avatar: 'WS',
-    avatarColor: const Color(0xFFDB2777),
-    chats: 32000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Mario',
-    tagline: 'It\'s-a me! Let\'s-a go!',
-    avatar: 'MA',
-    avatarColor: const Color(0xFFDC2626),
-    chats: 89000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Tech Support',
-    tagline: 'Have you tried turning it off and on?',
-    avatar: 'TS',
-    avatarColor: const Color(0xFF2563EB),
-    chats: 28000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-  Character(
-    createdBy: '',
-    name: 'Fitness Coach',
-    tagline: 'Push yourself to the limit!',
-    avatar: 'FC',
-    avatarColor: const Color(0xFF16A34A),
-    chats: 41000000,
-    id: '',
-    createdAt: DateTime.now(),
-  ),
-];

@@ -1,38 +1,59 @@
 import 'package:avatar_ai/models/character_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeState {
-  final List<Character> frequentlyUsed;
   final List<Character> forYou;
   final List<Character> newToYou;
-
-  final bool isLoading;
+  final List<Character> frequentlyUsed;
+  final DocumentSnapshot? lastForYouDocument;
+  final DocumentSnapshot? lastNewToYouDocument;
+  final DocumentSnapshot? lastFrequentlyUsedDocument;
+  final bool hasMoreForYou;
+  final bool hasMoreNewToYou;
+  final bool hasMoreFrequentlyUsed;
+  final bool isLoadingMore;
   final String? errorMessage;
-  final bool isCharacterCreated;
-
-  const HomeState({
-    this.frequentlyUsed = const [],
+  HomeState({
     this.forYou = const [],
     this.newToYou = const [],
-    this.isLoading = false,
+    this.frequentlyUsed = const [],
+    this.lastForYouDocument,
+    this.lastNewToYouDocument,
+    this.lastFrequentlyUsedDocument,
+    this.hasMoreForYou = true,
+    this.hasMoreNewToYou = true,
+    this.hasMoreFrequentlyUsed = true,
+    this.isLoadingMore = false,
     this.errorMessage,
-    this.isCharacterCreated = false,
   });
 
   HomeState copyWith({
-    List<Character>? frequentlyUsed,
     List<Character>? forYou,
     List<Character>? newToYou,
-    bool? isLoading,
+    List<Character>? frequentlyUsed,
+    DocumentSnapshot? lastForYouDocument,
+    DocumentSnapshot? lastNewToYouDocument,
+    DocumentSnapshot? lastFrequentlyUsedDocument,
+    bool? hasMoreForYou,
+    bool? hasMoreNewToYou,
+    bool? hasMoreFrequentlyUsed,
+    bool? isLoadingMore,
     String? errorMessage,
-    bool? isCharacterCreated,
   }) {
     return HomeState(
-      frequentlyUsed: frequentlyUsed ?? this.frequentlyUsed,
       forYou: forYou ?? this.forYou,
       newToYou: newToYou ?? this.newToYou,
-      isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
-      isCharacterCreated: isCharacterCreated ?? this.isCharacterCreated,
+      frequentlyUsed: frequentlyUsed ?? this.frequentlyUsed,
+      lastForYouDocument: lastForYouDocument ?? this.lastForYouDocument,
+      lastNewToYouDocument: lastNewToYouDocument ?? this.lastNewToYouDocument,
+      lastFrequentlyUsedDocument:
+          lastFrequentlyUsedDocument ?? this.lastFrequentlyUsedDocument,
+      hasMoreForYou: hasMoreForYou ?? this.hasMoreForYou,
+      hasMoreNewToYou: hasMoreNewToYou ?? this.hasMoreNewToYou,
+      hasMoreFrequentlyUsed:
+          hasMoreFrequentlyUsed ?? this.hasMoreFrequentlyUsed,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }
