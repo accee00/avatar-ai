@@ -1,5 +1,4 @@
 import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
-
 import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +12,44 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  late final PageController _tryThesePageController;
+
   @override
   void initState() {
     super.initState();
+
+    _tryThesePageController = PageController(viewportFraction: 0.9);
+
+    _tryThesePageController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    final viewModel = ref.read(homeViewModelProvider.notifier);
+    final homeState = ref.watch(homeViewModelProvider).value;
+
+    final bool isNewToYou = true;
+
+    if (isNewToYou && homeState != null) {
+      // Check if the user has scrolled close to the end of the PageView
+      final ScrollPosition position = _tryThesePageController.position;
+      // Trigger load when there's less than 2 pages (8 cards) remaining
+      final double loadThreshold =
+          position.maxScrollExtent - (position.viewportDimension * 1.5);
+
+      if (position.pixels >= loadThreshold) {
+        // Only load if we are not currently loading and there are more items
+        if (!homeState.isLoadingMore && homeState.hasMoreNewToYou) {
+          viewModel.loadMoreNewToYou();
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tryThesePageController.removeListener(_scrollListener);
+    _tryThesePageController.dispose();
+    super.dispose();
   }
 
   List<Character> get _forYou {
@@ -30,15 +64,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   List<Character> get _featured {
     final homeState = ref.watch(homeViewModelProvider).value;
-    return homeState?.frequentlyUsed ?? [];
+    return homeState?.featured ?? [];
   }
+
+  bool get _isLoadingMore =>
+      ref.watch(homeViewModelProvider).value?.isLoadingMore ?? false;
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(homeViewModelProvider);
+
     return SafeArea(
       child: CustomScrollView(
         slivers: [
-          // App Bar
           SliverAppBar(
             floating: true,
             backgroundColor: const Color(0xFF0A0A0A),
@@ -48,11 +86,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF6C63FF),
-                        const Color(0xFF00D9FF),
-                      ],
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6C63FF), Color(0xFF00D9FF)],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -115,11 +150,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      colors: [
-                        const Color(0xFF6C63FF),
-                        const Color(0xFF00D9FF),
-                      ],
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFF6C63FF), Color(0xFF00D9FF)],
                     ).createShader(bounds),
                     child: const Text(
                       'Welcome back!',
@@ -146,8 +178,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'For you',
                     style: TextStyle(
@@ -170,8 +202,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           'Try these',
                           style: TextStyle(
@@ -182,20 +214,33 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildHorizontalGrid(_tryThese),
+                      // Pass the controller here
+                      _buildHorizontalGrid(
+                        _tryThese,
+                        controller: _tryThesePageController,
+                      ),
+
+                      // 4. Show Loading/End of List Indicators
+                      if (_isLoadingMore)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else
+                        SizedBox.shrink(),
+
                       const SizedBox(height: 24),
                     ],
                   ),
                 )
-              : SliverToBoxAdapter(child: SizedBox.shrink()),
+              : const SliverToBoxAdapter(child: SizedBox.shrink()),
 
-          // Featured Section
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'Featured',
                     style: TextStyle(
@@ -217,7 +262,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  Widget _buildHorizontalGrid(List<Character> characters) {
+  Widget _buildHorizontalGrid(
+    List<Character> characters, {
+    PageController? controller,
+  }) {
     if (characters.isEmpty) return const SizedBox.shrink();
 
     final int pageCount = (characters.length / 4).ceil();
@@ -226,9 +274,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
       height: MediaQuery.of(context).size.height * 0.5,
       child: PageView.builder(
         padEnds: false,
-        controller: PageController(viewportFraction: 0.9),
+        controller: controller ?? PageController(viewportFraction: 0.9),
         itemCount: pageCount,
-
         itemBuilder: (context, pageIndex) {
           final int startIndex = pageIndex * 4;
           final int endIndex = (startIndex + 4).clamp(0, characters.length);
@@ -236,15 +283,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
             startIndex,
             endIndex,
           );
-          if (pageIndex >= pageCount) {
-            final homeState = ref.watch(homeViewModelProvider).value;
-            if (homeState?.isLoadingMore ?? false) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
-              );
-            }
-            return const SizedBox.shrink();
-          }
 
           return Padding(
             padding: const EdgeInsets.only(left: 16.0, right: 8.0),
@@ -269,6 +307,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   Widget _buildCharacterCard(Character character) {
     return Container(
+      height: MediaQuery.of(context).size.height * 0.5,
+      width: MediaQuery.of(context).size.width * 0.3,
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(16),

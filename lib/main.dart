@@ -3,7 +3,6 @@
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/core/routes/go_routes.dart';
 import 'package:avatar_ai/firebase_options.dart';
-import 'package:avatar_ai/seed_characters.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 

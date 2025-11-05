@@ -1,28 +1,31 @@
+// lib/features/home/viewmodel/home_state.dart
+
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeState {
   final List<Character> forYou;
   final List<Character> newToYou;
-  final List<Character> frequentlyUsed;
+  final List<Character> featured;
   final DocumentSnapshot? lastForYouDocument;
   final DocumentSnapshot? lastNewToYouDocument;
-  final DocumentSnapshot? lastFrequentlyUsedDocument;
+  final DocumentSnapshot? lastFeaturedDocument;
   final bool hasMoreForYou;
   final bool hasMoreNewToYou;
-  final bool hasMoreFrequentlyUsed;
+  final bool hasMoreFeatured;
   final bool isLoadingMore;
   final String? errorMessage;
+
   HomeState({
     this.forYou = const [],
     this.newToYou = const [],
-    this.frequentlyUsed = const [],
+    this.featured = const [],
     this.lastForYouDocument,
     this.lastNewToYouDocument,
-    this.lastFrequentlyUsedDocument,
+    this.lastFeaturedDocument,
     this.hasMoreForYou = true,
     this.hasMoreNewToYou = true,
-    this.hasMoreFrequentlyUsed = true,
+    this.hasMoreFeatured = true,
     this.isLoadingMore = false,
     this.errorMessage,
   });
@@ -30,28 +33,26 @@ class HomeState {
   HomeState copyWith({
     List<Character>? forYou,
     List<Character>? newToYou,
-    List<Character>? frequentlyUsed,
+    List<Character>? featured,
     DocumentSnapshot? lastForYouDocument,
     DocumentSnapshot? lastNewToYouDocument,
-    DocumentSnapshot? lastFrequentlyUsedDocument,
+    DocumentSnapshot? lastFeaturedDocument,
     bool? hasMoreForYou,
     bool? hasMoreNewToYou,
-    bool? hasMoreFrequentlyUsed,
+    bool? hasMoreFeatured,
     bool? isLoadingMore,
     String? errorMessage,
   }) {
     return HomeState(
       forYou: forYou ?? this.forYou,
       newToYou: newToYou ?? this.newToYou,
-      frequentlyUsed: frequentlyUsed ?? this.frequentlyUsed,
+      featured: featured ?? this.featured,
       lastForYouDocument: lastForYouDocument ?? this.lastForYouDocument,
       lastNewToYouDocument: lastNewToYouDocument ?? this.lastNewToYouDocument,
-      lastFrequentlyUsedDocument:
-          lastFrequentlyUsedDocument ?? this.lastFrequentlyUsedDocument,
+      lastFeaturedDocument: lastFeaturedDocument ?? this.lastFeaturedDocument,
       hasMoreForYou: hasMoreForYou ?? this.hasMoreForYou,
       hasMoreNewToYou: hasMoreNewToYou ?? this.hasMoreNewToYou,
-      hasMoreFrequentlyUsed:
-          hasMoreFrequentlyUsed ?? this.hasMoreFrequentlyUsed,
+      hasMoreFeatured: hasMoreFeatured ?? this.hasMoreFeatured,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: errorMessage ?? this.errorMessage,
     );

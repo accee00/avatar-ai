@@ -6,7 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 part 'home_repository.g.dart';
+
+typedef PaginatedCharacters = ({
+  List<Character> characters,
+  DocumentSnapshot? lastDocument,
+});
 
 @riverpod
 HomeRepository homeRepository(Ref ref) {
@@ -17,15 +23,12 @@ HomeRepository homeRepository(Ref ref) {
 }
 
 class HomeRepository {
-  ///
   final FirebaseAuth firebaseAuth;
-
-  ///
   final FirebaseFirestore firebaseFirestore;
 
-  ///
   HomeRepository(this.firebaseAuth, this.firebaseFirestore);
 
+  /// Fetches the initial list of public/default characters (non-paginated).
   Future<Either<AppFailure, List<Character>>> getDefaultCharacters() async {
     try {
       final QuerySnapshot<Map<String, dynamic>> querySnapshot =
@@ -43,14 +46,15 @@ class HomeRepository {
 
       return right(characters);
     } on FirebaseException catch (e) {
-      logInfo('[getCharacters] exception home repo: $e');
+      logInfo('[getDefaultCharacters] exception home repo: $e');
       return left(
         AppFailure(e.message ?? 'An unknown Firebase error occurred.'),
       );
     }
   }
 
-  Future<Either<AppFailure, List<Character>>> getUserCreatedCharacterPaginated({
+  Future<Either<AppFailure, PaginatedCharacters>>
+  getUserCreatedCharacterPaginated({
     int limit = 10,
     DocumentSnapshot? lastDocument,
   }) async {
@@ -74,7 +78,12 @@ class HomeRepository {
           )
           .toList();
 
-      return right(userCharacter);
+      // Determine the last document for the next page fetch
+      final DocumentSnapshot? newLastDocument = querySnapshot.docs.isNotEmpty
+          ? querySnapshot.docs.last
+          : null;
+
+      return right((characters: userCharacter, lastDocument: newLastDocument));
     } on FirebaseException catch (e) {
       logInfo('[getUserCreatedCharacterPaginated] exception home repo: $e');
       return left(
