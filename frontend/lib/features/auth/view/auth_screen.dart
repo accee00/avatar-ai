@@ -323,6 +323,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           const SizedBox(height: 16),
           Text(
             'By signing up, you agree to our Terms & Privacy Policy',
+            textScaler: TextScaler.linear(0.9),
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[600], fontSize: 12),
           ),

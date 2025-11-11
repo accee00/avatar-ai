@@ -1,0 +1,19 @@
+{
+  "name": "avatar-fev",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "author": "harsh-dev",
+  "license": "ISC",
+  "description": "Avatar Ai backend.",
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0"
+  }
+}

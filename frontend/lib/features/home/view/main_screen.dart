@@ -1,5 +1,6 @@
 import 'package:avatar_ai/features/home/view/home_screen.dart';
 import 'package:avatar_ai/features/myavatar/view/my_avatar.dart';
+import 'package:avatar_ai/features/myprofile/view/my_profile.dart';
 import 'package:avatar_ai/view/message_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +13,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  List<Widget> view = [HomeView(), ChatScreen(), MyAvatarScreen()];
+  List<Widget> view = [HomeView(), ChatScreen(), MyAvatarScreen(), MyProfile()];
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +55,9 @@ class _MainScreenState extends State<MainScreen> {
               label: 'My Avatars',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              activeIcon: Icon(Icons.search),
-              label: 'Search',
+              icon: Icon(Icons.person),
+              activeIcon: Icon(Icons.person),
+              label: 'My Profile',
             ),
           ],
         ),
