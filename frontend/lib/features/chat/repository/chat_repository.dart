@@ -3,6 +3,7 @@ import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 part 'chat_repository.g.dart';
 
 @riverpod
@@ -11,22 +12,22 @@ ChatRepository chatRepository(Ref ref) {
 }
 
 class ChatRepository {
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore firebaseFirestore;
 
-  ChatRepository(this._firestore);
+  ChatRepository(this.firebaseFirestore);
 
   /// Increment character chat count
-  Future<void> incrementChatCount(String characterId) async {
+  Future<void> incrementCharacterChatCount(String characterId) async {
     try {
       logInfo('Incrementing chat count in characters');
-      await _firestore.collection('characters').doc(characterId).update({
+      await firebaseFirestore.collection('characters').doc(characterId).update({
         'chats': FieldValue.increment(1),
       });
     } on FirebaseException catch (e) {
       if (e.code == 'not-found' || e.code == 'permission-denied') {
         try {
           logInfo('Fallback: Incrementing chat count in public_characters');
-          await _firestore
+          await firebaseFirestore
               .collection('public_characters')
               .doc(characterId)
               .update({'chats': FieldValue.increment(1)});
@@ -43,11 +44,107 @@ class ChatRepository {
     }
   }
 
-  /// Save message to Firestore
-  Future<void> saveMessage(Message message) async {
+  /// Add character to favorites
+  Future<void> addToFavorites(String userId, String characterId) async {
     try {
-      logInfo('Saving chat messages');
-      await _firestore
+      await firebaseFirestore.collection('users').doc(userId).update({
+        'favorites': FieldValue.arrayUnion([characterId]),
+      });
+    } catch (e) {
+      throw Exception('Failed to add to favorites: $e');
+    }
+  }
+
+  /// Remove character from favorites
+  Future<void> removeFromFavorites(String userId, String characterId) async {
+    try {
+      await firebaseFirestore.collection('users').doc(userId).update({
+        'favorites': FieldValue.arrayRemove([characterId]),
+      });
+    } catch (e) {
+      throw Exception('Failed to remove from favorites: $e');
+    }
+  }
+
+  /// Check if character is in favorites
+  Future<bool> isFavorite(String userId, String characterId) async {
+    try {
+      final doc = await firebaseFirestore.collection('users').doc(userId).get();
+      final favorites = List<String>.from(doc.data()?['favorites'] ?? []);
+      return favorites.contains(characterId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Add chat to bookmarks
+  Future<void> addToBookmarks(
+    String userId,
+    Map<String, dynamic> bookmarkData,
+  ) async {
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('bookmarks')
+          .doc(bookmarkData['id'])
+          .set(bookmarkData);
+    } catch (e) {
+      throw Exception('Failed to add to bookmarks: $e');
+    }
+  }
+
+  /// Remove chat from bookmarks
+  Future<void> removeFromBookmarks(String userId, String bookmarkId) async {
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('bookmarks')
+          .doc(bookmarkId)
+          .delete();
+    } catch (e) {
+      throw Exception('Failed to remove from bookmarks: $e');
+    }
+  }
+
+  /// Check if chat is bookmarked
+  Future<bool> isBookmarked(String userId, String characterId) async {
+    try {
+      final doc = await firebaseFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('bookmarks')
+          .doc(characterId)
+          .get();
+      return doc.exists;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get user's bookmarks
+  Stream<QuerySnapshot> getBookmarksStream(String userId) {
+    return firebaseFirestore
+        .collection('users')
+        .doc(userId)
+        .collection('bookmarks')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
+  /// Save message to Firestore
+  Future<void> saveMessage({
+    required String userId,
+    required String characterId,
+    required Message message,
+  }) async {
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('chats')
+          .doc(characterId)
           .collection('messages')
           .doc(message.id)
           .set(message.toJson());
@@ -57,11 +154,16 @@ class ChatRepository {
   }
 
   /// Get messages for a character
-  Stream<List<Message>> getMessages(String characterId) {
-    logInfo("Get messages for a character");
-    return _firestore
+  Stream<List<Message>> getMessagesStream({
+    required String userId,
+    required String characterId,
+  }) {
+    return firebaseFirestore
+        .collection('users')
+        .doc(userId)
+        .collection('chats')
+        .doc(characterId)
         .collection('messages')
-        .where('characterId', isEqualTo: characterId)
         .orderBy('timestamp', descending: false)
         .snapshots()
         .map(

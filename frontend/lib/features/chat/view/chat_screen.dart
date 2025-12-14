@@ -1,6 +1,7 @@
 import 'package:avatar_ai/features/chat/viewmodel/chat_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,11 +18,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(chatViewModelProvider.notifier).initializeChat(widget.character);
+      ref
+          .read(chatViewModelProvider.notifier)
+          .initializeChat(character: widget.character, userId: userId);
     });
   }
 
@@ -38,7 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     ref
         .read(chatViewModelProvider.notifier)
-        .sendMessage(text, widget.character);
+        .sendMessage(text: text, character: widget.character, userId: userId);
     _messageController.clear();
     _scrollToBottom();
   }
@@ -53,6 +58,131 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         );
       }
     });
+  }
+
+  void _showOptionsMenu() {
+    final chatState = ref.read(chatViewModelProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Add to Favorites Option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: chatState.isFavorite
+                      ? const Color(0xFFFF6B9D).withOpacity(0.2)
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  chatState.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: chatState.isFavorite
+                      ? const Color(0xFFFF6B9D)
+                      : Colors.white,
+                ),
+              ),
+              title: Text(
+                chatState.isFavorite
+                    ? 'Remove from Favorites'
+                    : 'Add to Favorites',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                ref
+                    .read(chatViewModelProvider.notifier)
+                    .toggleFavorite(userId, widget.character.id);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      style: TextStyle(color: Colors.white),
+                      chatState.isFavorite
+                          ? 'Removed from favorites'
+                          : 'Added to favorites',
+                    ),
+                    backgroundColor: const Color(0xFF1A1A1A),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+
+            // Bookmark Option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: chatState.isBookmarked
+                      ? const Color(0xFF6C63FF).withOpacity(0.2)
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  chatState.isBookmarked
+                      ? Icons.bookmark
+                      : Icons.bookmark_border,
+                  color: chatState.isBookmarked
+                      ? const Color(0xFF6C63FF)
+                      : Colors.white,
+                ),
+              ),
+              title: Text(
+                chatState.isBookmarked ? 'Remove Bookmark' : 'Bookmark Chat',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                ref
+                    .read(chatViewModelProvider.notifier)
+                    .toggleBookmark(userId, widget.character);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      chatState.isBookmarked
+                          ? 'Bookmark removed'
+                          : 'Chat bookmarked',
+                    ),
+                    backgroundColor: const Color(0xFF1A1A1A),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -115,7 +245,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: _showOptionsMenu,
+          ),
         ],
       ),
       body: Column(
