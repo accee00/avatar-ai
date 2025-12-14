@@ -1,57 +1,29 @@
-import 'package:avatar_ai/models/message_model.dart';
+import 'package:avatar_ai/features/chat/viewmodel/chat_view_model.dart';
+import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/chat/model/message_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({Key? key}) : super(key: key);
+class ChatScreen extends ConsumerStatefulWidget {
+  final Character character;
+
+  const ChatScreen({super.key, required this.character});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<Message> _messages = [
-    Message(
-      text:
-          "Your neighbor just knocked. He says his power's out... but why won't he leave?",
-      isUser: false,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-      id: '',
-    ),
-    Message(
-      id: '',
 
-      text: "Hey, thanks for letting me know. Is everything okay?",
-      isUser: true,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
-    ),
-    Message(
-      id: '',
-
-      text:
-          "Oh yes, everything's fine! Just... the power went out suddenly. Very strange. Mind if I wait here for a bit? It's quite dark outside.",
-      isUser: false,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 3)),
-    ),
-    Message(
-      id: '',
-
-      text: "Sure, no problem. Do you need to call the power company?",
-      isUser: true,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
-    ),
-    Message(
-      id: '',
-
-      text:
-          "That's very kind of you... *shifts uncomfortably* Say, have you noticed anything unusual in the neighborhood lately?",
-      isUser: false,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 1)),
-    ),
-  ];
-
-  bool _isTyping = false;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(chatViewModelProvider.notifier).initializeChat(widget.character);
+    });
+  }
 
   @override
   void dispose() {
@@ -61,41 +33,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
+    final text = _messageController.text;
+    if (text.trim().isEmpty) return;
 
-    setState(() {
-      _messages.add(
-        Message(
-          id: '',
-          text: _messageController.text,
-          isUser: true,
-          timestamp: DateTime.now(),
-        ),
-      );
-      _isTyping = true;
-    });
-
+    ref
+        .read(chatViewModelProvider.notifier)
+        .sendMessage(text, widget.character);
     _messageController.clear();
     _scrollToBottom();
-
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _messages.add(
-            Message(
-              id: '',
-              text:
-                  "Interesting question... *glances at the window* I think there might be more to this power outage than meets the eye. Have you checked your basement recently?",
-              isUser: false,
-              timestamp: DateTime.now(),
-            ),
-          );
-          _isTyping = false;
-        });
-        _scrollToBottom();
-      }
-    });
   }
 
   void _scrollToBottom() {
@@ -112,6 +57,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(chatViewModelProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -130,16 +77,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF6C63FF),
-                    const Color(0xFF6C63FF).withOpacity(0.6),
+                    widget.character.avatarColor,
+                    widget.character.avatarColor.withOpacity(0.6),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'NC',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  widget.character.avatar,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -148,9 +98,12 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'New Character',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  Text(
+                    widget.character.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   Text(
                     'Online',
@@ -172,12 +125,13 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16.0),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
+              itemCount:
+                  chatState.messages.length + (chatState.isTyping ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == _messages.length && _isTyping) {
+                if (index == chatState.messages.length && chatState.isTyping) {
                   return _buildTypingIndicator();
                 }
-                return _buildMessageBubble(_messages[index]);
+                return _buildMessageBubble(chatState.messages[index]);
               },
             ),
           ),
@@ -249,11 +203,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF6C63FF),
-                          const Color(0xFF00D9FF),
-                        ],
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6C63FF), Color(0xFF00D9FF)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -291,16 +242,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF6C63FF),
-                    const Color(0xFF6C63FF).withOpacity(0.6),
+                    widget.character.avatarColor,
+                    widget.character.avatarColor.withOpacity(0.6),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'NC',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  widget.character.avatar,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -371,7 +325,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               child: const Center(
                 child: Text(
-                  'D',
+                  'U',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -396,16 +350,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C63FF),
-                  const Color(0xFF6C63FF).withOpacity(0.6),
+                  widget.character.avatarColor,
+                  widget.character.avatarColor.withOpacity(0.6),
                 ],
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'NC',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                widget.character.avatar,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -452,7 +409,7 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
       onEnd: () {
-        if (mounted && _isTyping) {
+        if (mounted) {
           setState(() {});
         }
       },

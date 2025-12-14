@@ -1,7 +1,6 @@
 import 'package:avatar_ai/features/home/view/home_screen.dart';
 import 'package:avatar_ai/features/myavatar/view/my_avatar.dart';
 import 'package:avatar_ai/features/myprofile/view/my_profile.dart';
-import 'package:avatar_ai/view/message_screen.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -13,7 +12,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  List<Widget> view = [HomeView(), ChatScreen(), MyAvatarScreen(), MyProfile()];
+  List<Widget> view = [
+    HomeView(),
+    Center(child: Text("Recent chats.")),
+    MyAvatarScreen(),
+    MyProfile(),
+  ];
 
   @override
   Widget build(BuildContext context) {

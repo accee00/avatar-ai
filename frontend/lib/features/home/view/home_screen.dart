@@ -1,6 +1,7 @@
 import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
 import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
 import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/chat/view/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,14 +31,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final bool isNewToYou = true;
 
     if (isNewToYou && homeState != null) {
-      // Check if the user has scrolled close to the end of the PageView
       final ScrollPosition position = _tryThesePageController.position;
-      // Trigger load when there's less than 2 pages (8 cards) remaining
       final double loadThreshold =
           position.maxScrollExtent - (position.viewportDimension * 1.5);
 
       if (position.pixels >= loadThreshold) {
-        // Only load if we are not currently loading and there are more items
         if (!homeState.isLoadingMore && homeState.hasMoreNewToYou) {
           viewModel.loadMoreNewToYou();
         }
@@ -214,13 +212,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Pass the controller here
                       _buildHorizontalGrid(
                         _tryThese,
                         controller: _tryThesePageController,
                       ),
 
-                      // 4. Show Loading/End of List Indicators
                       if (_isLoadingMore)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -318,7 +314,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: () {
+            // Navigate to ChatScreen with character data
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(character: character),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.all(14.0),
             child: Column(
