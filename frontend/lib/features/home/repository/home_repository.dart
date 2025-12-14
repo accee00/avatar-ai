@@ -55,7 +55,7 @@ class HomeRepository {
 
   Future<Either<AppFailure, PaginatedCharacters>>
   getUserCreatedCharacterPaginated({
-    int limit = 10,
+    int limit = 30,
     DocumentSnapshot? lastDocument,
   }) async {
     try {

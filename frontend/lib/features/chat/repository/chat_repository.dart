@@ -1,6 +1,8 @@
 import 'package:avatar_ai/core/firebase_providers/firebase_providers.dart';
 import 'package:avatar_ai/core/logger/logger.dart';
+import 'package:avatar_ai/features/chat/model/history_model.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
+import 'package:avatar_ai/models/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -170,5 +172,56 @@ class ChatRepository {
           (snapshot) =>
               snapshot.docs.map((doc) => Message.fromJson(doc.data())).toList(),
         );
+  }
+
+  Future<List<HistoryModel>> getHistory(String userId) async {
+    try {
+      final chatsSnapshot = await firebaseFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('chats')
+          .get();
+
+      final List<HistoryModel> history = [];
+
+      for (final chatDoc in chatsSnapshot.docs) {
+        final chatId = chatDoc.id;
+
+        // Get last message
+        final lastMessageSnap = await chatDoc.reference
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+
+        if (lastMessageSnap.docs.isEmpty) {
+          continue;
+        }
+
+        final lastMessageData = lastMessageSnap.docs.first.data();
+
+        final lastMessage = Message.fromJson(lastMessageData);
+
+        // Get character info
+        final characterSnap = await firebaseFirestore
+            .collection('characters')
+            .doc(chatId)
+            .get();
+
+        if (!characterSnap.exists) {
+          continue;
+        }
+
+        final character = Character.fromJson(characterSnap.data()!);
+
+        history.add(
+          HistoryModel(character: character, lastMessage: lastMessage),
+        );
+      }
+
+      return history;
+    } catch (e) {
+      throw Exception('Failed to get history: $e');
+    }
   }
 }

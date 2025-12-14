@@ -213,7 +213,7 @@ class ChatViewModel extends _$ChatViewModel {
         state = state.copyWith(isBookmarked: true);
       }
     } catch (e) {
-      print('Error toggling bookmark: $e');
+      logInfo('Error toggling bookmark: $e');
     }
   }
 

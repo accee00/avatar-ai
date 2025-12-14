@@ -1,3 +1,4 @@
+import 'package:avatar_ai/features/chat/view/chat_history_screen.dart';
 import 'package:avatar_ai/features/home/view/home_screen.dart';
 import 'package:avatar_ai/features/myavatar/view/my_avatar.dart';
 import 'package:avatar_ai/features/myprofile/view/my_profile.dart';
@@ -14,7 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   List<Widget> view = [
     HomeView(),
-    Center(child: Text("Recent chats.")),
+    RecentChatsScreen(),
     MyAvatarScreen(),
     MyProfile(),
   ];
