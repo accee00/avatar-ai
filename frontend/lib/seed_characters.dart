@@ -1,7 +1,7 @@
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 
 const String _baseDiceBearUrl = 'https://api.dicebear.com/8.x';
 

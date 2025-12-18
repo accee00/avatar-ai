@@ -86,7 +86,6 @@ class RecentChatsScreen extends ConsumerWidget {
         child: const Icon(Icons.delete, color: Colors.red),
       ),
       onDismissed: (direction) {
-        // TODO: Implement delete functionality
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Chat deleted'),

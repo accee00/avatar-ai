@@ -1,6 +1,6 @@
 import 'package:avatar_ai/features/auth/viewmodel/auth_view_model.dart';
 import 'package:avatar_ai/features/home/viewmodel/home_view_model.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:avatar_ai/features/chat/view/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

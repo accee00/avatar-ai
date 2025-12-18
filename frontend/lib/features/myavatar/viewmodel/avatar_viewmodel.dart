@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:avatar_ai/core/failures/failure.dart';
 import 'package:avatar_ai/features/myavatar/repository/avatar_repository.dart';
 import 'package:avatar_ai/features/myavatar/viewmodel/avatar_state.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:fpdart/fpdart.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';

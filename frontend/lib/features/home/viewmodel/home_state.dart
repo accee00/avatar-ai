@@ -1,6 +1,6 @@
 // lib/features/home/viewmodel/home_state.dart
 
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeState {

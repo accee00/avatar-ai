@@ -2,7 +2,7 @@ import 'package:avatar_ai/core/firebase_providers/firebase_providers.dart';
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/features/chat/model/history_model.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

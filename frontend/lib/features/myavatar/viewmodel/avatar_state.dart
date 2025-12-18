@@ -1,4 +1,4 @@
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:flutter/foundation.dart';
 
 class AvatarState {

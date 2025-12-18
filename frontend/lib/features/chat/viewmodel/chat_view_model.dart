@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
 import 'package:avatar_ai/features/chat/repository/chat_repository.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

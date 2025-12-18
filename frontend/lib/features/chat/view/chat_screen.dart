@@ -1,5 +1,5 @@
 import 'package:avatar_ai/features/chat/viewmodel/chat_view_model.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:avatar_ai/features/chat/model/message_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +74,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
@@ -85,7 +84,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Add to Favorites Option
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
@@ -132,7 +130,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               },
             ),
 
-            // Bookmark Option
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
@@ -167,6 +164,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
+                      style: TextStyle(color: Colors.white),
                       chatState.isBookmarked
                           ? 'Bookmark removed'
                           : 'Chat bookmarked',
@@ -215,7 +213,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               child: Center(
                 child: Text(
-                  widget.character.avatar,
+                  widget.character.name[0],
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -383,7 +381,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               child: Center(
                 child: Text(
-                  widget.character.avatar,
+                  widget.character.name[0],
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

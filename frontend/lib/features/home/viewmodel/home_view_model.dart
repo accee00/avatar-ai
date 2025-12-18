@@ -1,10 +1,8 @@
-// lib/features/home/viewmodel/home_view_model.dart
-
 import 'package:avatar_ai/core/failures/failure.dart';
 import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/features/home/repository/home_repository.dart';
 import 'package:avatar_ai/features/home/viewmodel/home_state.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

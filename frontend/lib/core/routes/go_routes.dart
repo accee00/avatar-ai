@@ -4,7 +4,7 @@ import 'package:avatar_ai/features/auth/view/forgot_password.dart';
 import 'package:avatar_ai/features/auth/view/splash_screen.dart';
 import 'package:avatar_ai/features/home/view/main_screen.dart';
 import 'package:avatar_ai/features/myavatar/view/create_character_form.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

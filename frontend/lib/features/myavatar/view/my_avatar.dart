@@ -2,7 +2,7 @@ import 'package:avatar_ai/core/logger/logger.dart';
 import 'package:avatar_ai/core/routes/app_routes.dart';
 import 'package:avatar_ai/features/myavatar/viewmodel/avatar_state.dart';
 import 'package:avatar_ai/features/myavatar/viewmodel/avatar_viewmodel.dart';
-import 'package:avatar_ai/models/character_model.dart';
+import 'package:avatar_ai/features/myavatar/model/character_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
