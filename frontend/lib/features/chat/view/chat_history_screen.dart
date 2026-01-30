@@ -133,7 +133,7 @@ class RecentChatsScreen extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        character.avatar,
+                        character.name[0],
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,

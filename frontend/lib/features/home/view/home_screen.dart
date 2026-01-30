@@ -172,28 +172,29 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
 
           // For You Section
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'For you',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+          if (_forYou.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'For you',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildHorizontalGrid(_forYou),
-                const SizedBox(height: 24),
-              ],
+                  const SizedBox(height: 16),
+                  _buildHorizontalGrid(_forYou),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
-          ),
-
+          ],
           // Try these Section
           _tryThese.isNotEmpty
               ? SliverToBoxAdapter(
@@ -231,28 +232,30 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 )
               : const SliverToBoxAdapter(child: SizedBox.shrink()),
 
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Featured',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+          if (_featured.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Featured',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildHorizontalGrid(_featured),
-              ],
+                  const SizedBox(height: 16),
+                  _buildHorizontalGrid(_featured),
+                ],
+              ),
             ),
-          ),
 
-          SliverPadding(padding: const EdgeInsets.only(bottom: 80)),
+            SliverPadding(padding: const EdgeInsets.only(bottom: 80)),
+          ],
         ],
       ),
     );

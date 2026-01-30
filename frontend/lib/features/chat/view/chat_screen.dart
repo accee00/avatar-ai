@@ -489,7 +489,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             child: Center(
               child: Text(
-                widget.character.avatar,
+                widget.character.name[0],
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,

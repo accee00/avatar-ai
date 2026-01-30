@@ -5,11 +5,9 @@
 *.swp
 .DS_Store
 .atom/
-.build/
 .buildlog/
 .history
 .svn/
-.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -29,6 +27,7 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
 /build/
@@ -39,8 +38,145 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-/android/app/google-services.json
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+**android/app/src/google-services.json
+**firebase.json
+
+# iOS/XCode related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral
+
+# Windows
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/ephemeral
+
+# Linux
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/ephemeral
+
+# Coverage
+coverage/
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Exceptions to above rules.
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+
+# ========================
+# FIREBASE & SENSITIVE DATA
+# ========================
+
+# Firebase configuration files - CRITICAL
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+lib/firebase_options.dart
+
+# Firebase App Distribution
+**/android/app/src/debug/google-services.json
+**/android/app/src/release/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+**/ios/firebase_app_id_file.json
+
+# Environment variables and API keys
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
+*.env
+
+# Configuration files with secrets
+config.json
+secrets.json
+api_keys.dart
+lib/config/secrets.dart
+lib/config/api_keys.dart
+lib/constants/secrets.dart
+lib/constants/api_keys.dart
+
+# OAuth and authentication keys
+oauth_credentials.json
+client_secret*.json
+service_account*.json
+credentials.json
+
+# AWS credentials
+.aws/
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.p8
+*.cer
+*.crt
+*.der
+*.pfx
+
+# API documentation with keys (if generated)
+api_keys.txt
+credentials.txt
+secrets.txt
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+*.realm
+
+# Backup files
+*.backup
+*.bak
+*~
+frontend/android/app/google-services.json
+frontend/firebase.json
+# Custom configuration (add your specific files here)
+# Example: lib/config/production_config.dart
